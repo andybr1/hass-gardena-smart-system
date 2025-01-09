@@ -9,10 +9,10 @@ from homeassistant.const import (
 )
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
-    STATE_CLEANING,
-    STATE_DOCKED,
-    STATE_RETURNING,
-    STATE_ERROR,
+    VacuumActivity.CLEANING,
+    VacuumActivity.DOCKED,
+    VacuumActivity.RETURNING,
+    VacuumActivity.ERROR,
     VacuumEntityFeature,
 )
 
@@ -101,7 +101,7 @@ class GardenaSmartMower(StateVacuumEntity):
                 self._state = STATE_IDLE
             else:
                 _LOGGER.debug("Mower has an error")
-                self._state = STATE_ERROR
+                self._state = VacuumActivity.ERROR
         else:
             _LOGGER.debug("Getting mower state")
             activity = self._device.activity
@@ -113,21 +113,21 @@ class GardenaSmartMower(StateVacuumEntity):
                 "OK_CUTTING_TIMER_OVERRIDDEN",
                 "OK_LEAVING",
             ]:
-                if self._state != STATE_CLEANING:
+                if self._state != VacuumActivity.CLEANING:
                     self._stint_start = datetime.now()
                     self._stint_end = None
-                self._state = STATE_CLEANING
+                self._state = VacuumActivity.CLEANING
             elif activity == "OK_SEARCHING":
-                if self._state == STATE_CLEANING:
+                if self._state == VacuumActivity.CLEANING:
                     self._stint_end = datetime.now()
-                self._state = STATE_RETURNING
+                self._state = VacuumActivity.RETURNING
             elif activity in [
                 "OK_CHARGING",
                 "PARKED_TIMER",
                 "PARKED_PARK_SELECTED",
                 "PARKED_AUTOTIMER",
             ]:
-                self._state = STATE_DOCKED
+                self._state = VacuumActivity.DOCKED
             elif activity == "NONE":
                 self._state = None
                 _LOGGER.debug("Mower has no activity")
@@ -159,7 +159,7 @@ class GardenaSmartMower(StateVacuumEntity):
 
     def error(self):
         """Return the error message."""
-        if self._state == STATE_ERROR:
+        if self._state == VacuumActivity.ERROR:
             return self._error_message
         return ""
 
